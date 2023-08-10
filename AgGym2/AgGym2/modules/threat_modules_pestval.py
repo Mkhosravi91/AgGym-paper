@@ -13,7 +13,7 @@ import pdb
 
 print("abc")
 EMPTY = 0.0
-DEAD = 1.0
+DEGRADED = 1.0
 INFECTED = 2.0
 ALIVE = 3.0
 
@@ -50,9 +50,9 @@ class Threat:
 
     def apply_infection_reproductive_stage_survival(self):
         infect_count = np.count_nonzero(self.plot_state == INFECTED)
-        dead_count = np.count_nonzero(self.plot_state == DEAD)
+        degraded_count = np.count_nonzero(self.plot_state == DEGRADED)
 
-        if self.plot_size[0] * self.plot_size[1] == infect_count + dead_count:
+        if self.plot_size[0] * self.plot_size[1] == infect_count + degraded_count:
             pass
         else:
             infect_key = np.random.choice([0,1,2,3,4,5,6,7,8,9])
@@ -61,7 +61,7 @@ class Threat:
                 random_init_x = np.random.randint(0, self.plot_size[1])
                 random_init_y = np.random.randint(0, self.plot_size[0])
                 while True:
-                    if (random_init_y, random_init_x) in self.infect_list or self.plot_state[random_init_y, random_init_x] == DEAD:
+                    if (random_init_y, random_init_x) in self.infect_list or self.plot_state[random_init_y, random_init_x] == DEGRADED:
                         random_init_x = np.random.randint(0, self.plot_size[1])
                         random_init_y = np.random.randint(0, self.plot_size[0])
                     else:
@@ -78,7 +78,7 @@ class Threat:
             if p == 1:
                 y, x = i
                 # if not dead yet, cure it
-                if self.plot_state[y, x] != DEAD:
+                if self.plot_state[y, x] != DEGRADED:
                     # print(f"Applying pesticide on {x} {y}")
                     self.plot_state[y, x] = ALIVE
                     del self.infect_list[i]
@@ -97,11 +97,11 @@ class Threat:
             self.infect_list[k] += 1
             limit = np.random.choice(self.destruction_limit)
             if self.infect_list[k] >= limit:
-                self.plot_state[y, x] = DEAD
+                self.plot_state[y, x] = DEGRADED
 
                 neigh_list = []
 
-                # check if neighbouring dead have spread
+                # check if neighbouring degraded have spread
                 # check top
                 if y-1 >= 0:
                     if (y-1, x) not in self.infect_list.keys():
@@ -155,7 +155,7 @@ class Threat:
             # compute interaction
             # infection = self.compute_infection()
             y, x = plant_infected
-            if self.plot_state[y, x] == DEAD:
+            if self.plot_state[y, x] == DEGRADED:
                 continue
             # print(f"For infected plant {x} {y}")
             # print(infection)
@@ -392,9 +392,9 @@ class Threat_basic:
 
     def apply_infection_reproductive_stage_survival(self):
         infect_count = np.count_nonzero(self.grid == INFECTED)
-        dead_count = np.count_nonzero(self.grid == DEAD)
+        degraded_count = np.count_nonzero(self.grid == DEGRADED)
 
-        if self.num_points == infect_count + dead_count:
+        if self.num_points == infect_count + degraded_count:
             pass
         else:
             infect_key = np.random.choice([0,1,2,3,4,5,6,7,8,9])
@@ -404,7 +404,7 @@ class Threat_basic:
                 random_init_x = self.coords_x[random_index]
                 random_init_y = self.coords_y[random_index]
                 while True:
-                    if (random_init_y, random_init_x) in self.infect_list or self.grid[random_init_y, random_init_x] == DEAD:
+                    if (random_init_y, random_init_x) in self.infect_list or self.grid[random_init_y, random_init_x] == DEGRADED:
                         random_index = np.random.randint(0, self.num_points)
                         random_init_x = self.coords_x[random_index]
                         random_init_y = self.coords_y[random_index]
@@ -434,8 +434,8 @@ class Threat_basic:
                 y, x = i
                 if i not in self.infect_sprayed:
                     self.infect_sprayed.append(i)
-                # if not dead yet, cure it
-                if self.grid[y, x] != DEAD:
+                # if not degraded yet, cure it
+                if self.grid[y, x] != DEGRADED:
                     # print(f"Applying pesticide on {x} {y}")
                     self.grid[y, x] = ALIVE
                     self.infect_day_mat[y, x] = 0.
@@ -457,7 +457,7 @@ class Threat_basic:
         self.infection = {'high': high_infect, 'medium': medium_infect, 'low': low_infect}
 
     def infection_tracker(self, severity,  timestep):
-        # +1 day for infect survival, if #days reached destruction limit, mark plot state as DEAD
+        # +1 day for infect survival, if #days reached destruction limit, mark plot state as DEGRADED
         # start = time.time()
         self.timestep=timestep
         temp_list = list(self.infect_list)
@@ -474,17 +474,14 @@ class Threat_basic:
             self.infect_day_mat[y, x] += 1
             limit = np.random.choice(self.destruction_limit)
             if self.infect_day_mat[y, x] >= limit:
-                if self.grid[y, x] != DEAD:
-                    self.grid[y, x] = DEAD
+                if self.grid[y, x] != DEGRADED:
+                    self.grid[y, x] = DEGRADED
                     if 46<=self.timestep<=56:
                         self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+12) / (1+np.exp(-self.infect_day_mat[y, x]+12)))*0.5) - 0.5)*severity*3000)
                     elif 57<=self.timestep<=74:
                         self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+12) / (1+np.exp(-self.infect_day_mat[y, x]+12)))*0.4) - 0.4)*severity*3000)
                     else:
                         self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+12) / (1+np.exp(-self.infect_day_mat[y, x]+12)))*0.3) - 0.3)*severity*3000)
-                # self.Degraded_list.append((((np.exp(self.infect_day_mat[y, x]+6) / (1+np.exp(self.infect_day_mat[y, x]+6)))*0.6)*severity))
-                # self.Degraded_list.append( (1+(((np.exp(-self.infect_day_mat[y, x]+6) / (1+np.exp(-self.infect_day_mat[y, x]+6)))*0.4) - 0.4) )*severity)
-                # self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+6) / (1+np.exp(-self.infect_day_mat[y, x]+6)))*0.6) - 0.6)*severity)
                 # Dead_choice=np.random.choice(Dead)
                 # if Dead_choice==1
                 # self.grid[y, x] = DEAD
@@ -537,7 +534,7 @@ class Threat_basic:
         start_loop = time.time()
         for plant_infected in temp_list:
             y, x = plant_infected
-            if self.grid[y, x] == DEAD:
+            if self.grid[y, x] == DEGRADED:
                 continue
             
             start = time.time()
@@ -549,7 +546,7 @@ class Threat_basic:
             for (i, j) in zip(neighbouring_idx[0], neighbouring_idx[1]):
                 if (i, j) == (x, y):
                     continue
-                if (j, i) not in self.infect_list and self.grid[j, i] != DEAD and len(self.alive_sprayed)==0:
+                if (j, i) not in self.infect_list and self.grid[j, i] != DEGRADED and len(self.alive_sprayed)==0:
                     if (j, i) not in self.infect_sprayed and self.infection['high'][idx] == 1:
                         self.grid[j, i] = INFECTED
                         self.infect_list.append((j,i))
@@ -557,7 +554,7 @@ class Threat_basic:
                         self.grid[j, i] = INFECTED
                         self.infect_list.append((j,i))
                     # elif len(self.infect_list) == 0:
-                elif (j, i) not in self.infect_list and self.grid[j, i] != DEAD and len(self.alive_sprayed)!=0:
+                elif (j, i) not in self.infect_list and self.grid[j, i] != DEGRADED and len(self.alive_sprayed)!=0:
                     if (j, i) not in self.infect_sprayed and self.infection['high'][idx] == 1:
                             self.grid[j, i] = INFECTED
                             self.infect_list.append((j,i))
@@ -577,14 +574,14 @@ class Threat_basic:
             for i, j in zip(neighbouring_idx[0], neighbouring_idx[1]):
                 if (i, j) == (x, y):
                     continue
-                if (j, i) not in self.infect_list and self.grid[j, i] != DEAD and len(self.alive_sprayed)==0:
+                if (j, i) not in self.infect_list and self.grid[j, i] != DEGRADED and len(self.alive_sprayed)==0:
                     if (j, i) not in self.infect_sprayed and self.infection['medium'][idx] == 1:
                         self.grid[j, i] = INFECTED
                         self.infect_list.append((j,i))
                     elif (j, i) in self.infect_sprayed and self.infection['medium'][idx] == 2:
                         self.grid[j, i] = INFECTED
                         self.infect_list.append((j,i))
-                elif (j, i) not in self.infect_list and self.grid[j, i] != DEAD and len(self.alive_sprayed)!=0:
+                elif (j, i) not in self.infect_list and self.grid[j, i] != DEGRADED and len(self.alive_sprayed)!=0:
                     if (j, i) not in self.infect_sprayed and self.infection['medium'][idx] == 1:
                             self.grid[j, i] = INFECTED
                             self.infect_list.append((j,i))
@@ -695,8 +692,8 @@ class Threat_mp:
             existing_shm = shared_memory.SharedMemory(name=shr_name)
             temp_array = np.ndarray(self.plot_size, dtype=np.float64, buffer=existing_shm.buf)
             y, x = infect
-            # if not dead yet, cure it
-            if temp_array[y, x] != DEAD:
+            # if not degraded yet, cure it
+            if temp_array[y, x] != DEGRADED:
                 # print(f"Applying pesticide on {x} {y}")
                 temp_array[y, x] = ALIVE
                 # del self.infect_list[infect]
@@ -738,13 +735,13 @@ class Threat_mp:
         self.infect_list[infect] += 1
         limit = np.random.choice(self.destruction_limit)
         if self.infect_list[infect] >= limit:
-            temp_array[y, x] = DEAD
+            temp_array[y, x] = DEGRADED
         existing_shm.close()
 
         return (y,x)
 
     def infection_tracker(self):
-        # +1 day for infect survival, if #days reached destruction limit, mark plot state as DEAD
+        # +1 day for infect survival, if #days reached destruction limit, mark plot state as DEGRADED
         temp_list = copy.deepcopy(self.infect_list)
 
         p = Pool(cpu_count())
@@ -764,7 +761,7 @@ class Threat_mp:
         existing_shm = shared_memory.SharedMemory(name=shr_name)
         temp_array = np.ndarray(self.plot_size, dtype=np.float64, buffer=existing_shm.buf)
         y, x = infect
-        if temp_array[y, x] == DEAD:
+        if temp_array[y, x] == DEGRADED:
             existing_shm.close()
             return ()
 

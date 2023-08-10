@@ -444,12 +444,7 @@ if env.model == 'ppo':
     plt.savefig(cwd / 'results' / now_str / 'ppo_stats.png', dpi=300)
     plt.close()
 #
-def G(severity):
-    # if 0=<severity<=0.22:
-    # gyield=1/(1+np.exp((severity-0.24)/1))
-    gyield=1/(1+np.exp(-(severity-0.26)))
-    # else:
-    return gyield
+
 
 agent_list = os.listdir(Path(env.result_path) / 'agent_weights')
 max_ep = 0
@@ -476,9 +471,9 @@ with agent.eval_mode():
             agent.observe(obs.astype(np.float32), reward, done, done)
             if done == True:
                 # dead and infected yield
-                print(f"dead_count={env.dead_counts[-1]}")
+                print(f"degraded_count={env.degraded_counts[-1]}")
                 print(f"infect_count={env.infect_counts[-1]}")
-                healthy_plants=env.state_space-(env.dead_counts[-1]+env.infect_counts[-1])
+                healthy_plants=env.state_space-(env.degraded_counts[-1]+env.infect_counts[-1])
                 # total_yield=healthy_plants+np.sum(np.array(env.Degraded_list))+env.infect_counts[-1]
                 # total_yield=healthy_plants+np.sum(np.array(env.Degraded_list))+(env.infect_counts[-1])*0.6
                 # total_yield=healthy_plants+np.sum(np.array(env.Degraded_list))+(env.infectdeg_list[-1])

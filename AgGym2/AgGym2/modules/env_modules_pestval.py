@@ -24,7 +24,7 @@ import matplotlib as mpl
 import pandas as pd
 
 EMPTY = 0.0
-DEAD = 1.0
+DEGRADED = 1.0
 INFECTED = 2.0
 ALIVE = 3.0
 MRES = 4.0
@@ -289,7 +289,7 @@ class cartesian_grid:
             elif self.grid[y,x] == INFECTED:
                 rectangle = plt.Rectangle((x-(self.plotL/10)*4, y-(self.plotW/10)*4), (self.plotL/10)*9, (self.plotW/10)*9, fc=plot_state_cmap(norm(2)))
                 ax[val].add_patch(rectangle)
-            elif self.grid[y,x] == DEAD:
+            elif self.grid[y,x] == DEGRADED:
                 rectangle = plt.Rectangle((x-(self.plotL/10)*4, y-(self.plotW/10)*4), (self.plotL/10)*9, (self.plotW/10)*9, fc=plot_state_cmap(norm(1)))
                 ax[val].add_patch(rectangle)
             else:
@@ -302,6 +302,9 @@ class cartesian_grid:
         else:
             return ax
         
+    def clean_and_convert(self, value):
+        cleaned_value = ''.join(char for char in value if char.isdigit() or char == '.')
+        return float(cleaned_value) 
     def rl_init(self):
         self.growth_stage_days = gu.str_to_type(self.growth_stage_days, 'int')
         self.action_dim = gu.str_to_type(self.action_dim, 'float')
@@ -310,20 +313,20 @@ class cartesian_grid:
         
         self.grid = self.remap_grid(ALIVE)
         self.healthy_grid = self.remap_grid(ALIVE)
-        self.terminal_grid = self.remap_grid(DEAD)
+        self.terminal_grid = self.remap_grid(DEGRADED)
         self.growth_stages = {}
         for i,j in zip(self.growth_stage_title, self.growth_stage_days):
             self.growth_stages[i] = j
         
         self.action_list = []
         self.infect_counts = []
-        self.dead_counts = []
-        self.dead_counts2 = []
+        self.degraded_counts = []
+        self.degraded_counts2 = []
         
         self.num_of_plots_per_acre = int(43560 / (self.plotL * self.plotW))
         self.unit_potential_yield = int(self.simulated_potential_yield) / self.num_of_plots_per_acre
         self.price_per_bushel = int(self.price_per_bushel) 
-        self.unit_pesticide_per_acre = int(self.price_per_acre) / self.num_of_plots_per_acre
+        self.unit_pesticide_per_acre = [self.clean_and_convert(value)/ self.num_of_plots_per_acre for value in self.price_per_acre] 
 
         self.timestep = 0
         self.episode = -1
@@ -417,9 +420,9 @@ class cartesian_grid:
         #TEMP
         self.key = False
         self.infect_counts = []
-        self.dead_counts = []
+        self.degraded_counts = []
         self.Degraded_list=[]
-        self.dead_counts2 = []
+        self.degraded_counts2 = []
         self.infectdeg_list = []
 
         env_utils.set_growth_stage_dict(self)
@@ -452,17 +455,17 @@ class cartesian_grid:
         # pdb.set_trace()
         reward = reward_accumulator.main(self)
         infect_count = np.count_nonzero(self.grid == INFECTED)
-        dead_count = np.count_nonzero(self.grid == DEAD)
+        degraded_count = np.count_nonzero(self.grid == DEGRADED)
         self.reward_list.append(reward)
         self.action_list.append(action)
         self.infect_counts.append(infect_count)
-        self.dead_counts.append(dead_count)
+        self.degraded_counts.append(degraded_count)
         # self.Degraded_list.append(np.sum(np.array(Degraded_list)))
         if self.timestep == 0:
-            self.dead_counts2.append(dead_count)
+            self.degraded_counts2.append(degraded_count)
 
-        elif self.dead_counts2[-1]!=dead_count:
-            self.dead_counts2.append(dead_count)
+        elif self.degraded_counts2[-1]!=degraded_count:
+            self.degraded_counts2.append(degraded_count)
             # self.Degraded_list.append(np.sum(np.array(Degraded_list)))
             if len(Degraded_list):
                 for i in range(len(Degraded_list)):
