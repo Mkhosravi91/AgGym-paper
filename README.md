@@ -10,7 +10,8 @@ To enhance the stochasticity and realism of the environment, users can optionall
 To customize how AgGym handles threats and their severity, you can adjust the sim_from_data setting as follows:  
 
 By setting sim_from_data = True, you allow AgGym to use weather data to predict the potential threat severity and employ the simulation files for threat introduction.
-If set to False, you can manually input the severity as a hardcoded value of your choice, and AgGym will use predefined settings for various stages and their durations throughout the growing season (which is currently defined in the config file).
+If set to False, you can manually input the severity as a hardcoded value of your choice, and AgGym will use predefined settings for various stages and their durations throughout the growing season (which is currently defined in the config file).  
+The anticipated results include visual representations of agent performance, saved agent weights, a detailed analysis of performance and costs, and the overall revenue.
 
 __Arxiv Paper:__  
 # Simulation
