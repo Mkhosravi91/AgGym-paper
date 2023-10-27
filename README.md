@@ -14,3 +14,4 @@ If set to False, you can manually input the severity as a hardcoded value of you
 
 __Arxiv Paper:__  
 # Simulation
+AgGym primarily utilizes simulation to generate data on the dynamics and spread patterns of biotic stress. This simulation model is capable of predicting the end-of-season yield loss, both with and without pesticide application.
