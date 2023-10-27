@@ -17,6 +17,6 @@ __Arxiv Paper:__
 AgGym primarily utilizes simulation to generate data on the dynamics and spread patterns of biotic stress. This simulation model is capable of predicting the end-of-season yield loss, both with and without pesticide application.
 # Running experiments
 - **Deep Rl based mitigation strategy**: train.py.
-- **Yield prediction without pesticide application**: Description or path for experiment 2. For instance: `experiment2.py`.
-- **Yield loss prediction with pesticide application**: Description or path for experiment 3. For instance: `experiment3.py`.
+- **Yield prediction without pesticide application**: train-pestval.py
+- **Yield loss prediction with pesticide application**: train-pestval-new.py
 
