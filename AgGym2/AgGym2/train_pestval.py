@@ -75,7 +75,7 @@ env.rl_init()
 obs_size = env.state_space
 n_actions = env.action_space.n
 
-env.gpu = int(env.gpu)
+env.gpu = int(0)
 print(f"Model: {env.model}, GPU: {env.gpu}")
 
 if env.model == 'ddqn':
