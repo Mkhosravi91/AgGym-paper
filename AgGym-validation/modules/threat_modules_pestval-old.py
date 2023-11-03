@@ -252,10 +252,8 @@ class Threat_basic:
         self.coords_y = coords_y
         self.num_points = len(self.coords_x)
         self.pesticide_actions = pesticide_action
-        self.destruction_limit = [13,14,15]
+        self.destruction_limit = [15,16,17]
         self.infect_list = []
-        self.grid_list=[]
-        self.infect_sprayed= []
         
         
         logging.info("---------- Threat initiated ----------")
@@ -455,24 +453,13 @@ class Threat_basic:
     def apply_pesticide(self, action: float):
         # pdb.set_trace()
         logging.debug(f"Infect list before pest: {self.infect_list}")
-        self.grid_list=[]
-        self.alive_sprayed=[]
-        for i in range(len(self.grid)):
-            for j in range(len(self.grid[0])):
-                self.grid_list.append((i, j))
         pesticide_chance = self.pesticide_actions[action]
-        
         temp_list = []
         pest_chance_list = np.random.choice([0,1], size=len(self.infect_list), replace=True, p=[1-pesticide_chance, pesticide_chance])
-        for i in self.grid_list:
-            y, x=i
-        self.alive_sprayed = [i for i in self.grid_list if not np.any(i == self.infect_list) or not np.any(i == self.Degraded_list) ]
         idx = 0
-        self.infect_sprayed=[]
         for p, i in zip(pest_chance_list, self.infect_list):
             if p == 1:
                 y, x = i
-                self.infect_sprayed.append(i)
                 print(y, x)
                 # if not dead yet, cure it
                 if self.grid[y, x] != DEAD:
@@ -493,16 +480,9 @@ class Threat_basic:
         low_infect = np.random.choice([0,1], size=24, replace=True, p=[0.95, 0.05])
         self.infection = {'high': high_infect, 'medium': medium_infect, 'low': low_infect}
 
-    def spread_probabilities_sprayed(self):
-        high_infect = np.random.choice([0, 2, 3], size=8, replace=True, p=[0.75, 0.2, 0.05])
-        medium_infect = np.random.choice([0, 2, 3], size=16, replace=True, p=[0.8, 0.17, 0.03])
-        low_infect = np.random.choice([0,1], size=24, replace=True, p=[0.95, 0.05])
-        self.infection = {'high': high_infect, 'medium': medium_infect, 'low': low_infect}
-
-    def infection_tracker(self, severity, timestep):
+    def infection_tracker(self, severity):
         # +1 day for infect survival, if #days reached destruction limit, mark plot state as DEAD
         # start = time.time()
-        self.timestep=timestep
         temp_list = list(self.infect_list)
         # end = time.time()
         # print(f"Infection Tracker temp_list | Time taken: {end - start}")
@@ -523,14 +503,8 @@ class Threat_basic:
                 # if np.random.rand()<=severity:
                 if self.grid[y, x] != DEAD:
                     self.grid[y, x] = DEAD
-                    if 46<=self.timestep<=56:
-                        self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+7) / (1+np.exp(-self.infect_day_mat[y, x]+7)))*0.6) - 0.6)*severity)
-                    elif 57<=self.timestep<=74:
-                        self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+7) / (1+np.exp(-self.infect_day_mat[y, x]+7)))*0.5) - 0.5)*severity)
-                    else:
-                        self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+7) / (1+np.exp(-self.infect_day_mat[y, x]+7)))*0.4) - 0.4)*severity)
                 # self.Degraded_list.append((((np.exp(self.infect_day_mat[y, x]+7) / (1+np.exp(self.infect_day_mat[y, x]+7)))*0.6)*severity))
-                    # self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+7) / (1+np.exp(-self.infect_day_mat[y, x]+7)))*0.25) - 0.25)*severity)
+                    self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+7) / (1+np.exp(-self.infect_day_mat[y, x]+7)))*0.25) - 0.25)*severity)
                 # self.Degraded_list.append( (1+(((np.exp(-self.infect_day_mat[y, x]+7) / (1+np.exp(-self.infect_day_mat[y, x]+7)))*0.4) - 0.4) )*severity)
                 # Dead_choice=np.random.choice([1, 0.6],replace=True, p=[0.4, 0.6])
                 # if Dead_choice==1
@@ -603,23 +577,12 @@ class Threat_basic:
                     continue
                 if (j, i) not in self.infect_list and self.grid[j, i] != DEAD:
                     # try:
-                    if self.timestep< 62 and self.infection['high'][idx] == 1:
-                        # pdb.set_trace()
+                    if self.infection['high'][idx] == 1:
                         self.grid[j, i] = INFECTED
                         self.infect_list.append((j,i))
-                    elif (j, i) in self.infect_sprayed and self.infection['high'][idx] == 2:
-                        self.grid[j, i] = INFECTED
-                        self.infect_list.append((j,i))
-                    elif (j, i) in self.alive_sprayed and self.infection['high'][idx] == 3:
-                        self.grid[j, i] = INFECTED
-                        self.infect_list.append((j,i))
-
-
-                
                     # except:
                         # pdb.set_trace()
                 idx += 1
-                
             end = time.time()
             dense_loop.append(end - start)
                 
@@ -633,26 +596,13 @@ class Threat_basic:
                 if (i, j) == (x, y):
                     continue
                 if (j, i) not in self.infect_list and self.grid[j, i] != DEAD:
-                    if self.timestep< 62 and self.infection['medium'][idx] == 1:
-                        self.grid[j, i] = INFECTED
-                        self.infect_list.append((j,i))
-                    elif (j, i) in self.infect_sprayed and self.infection['medium'][idx] == 2:
-                        self.grid[j, i] = INFECTED
-                        self.infect_list.append((j,i))
-                    elif (j, i) in self.alive_sprayed and self.infection['medium'][idx] == 3:
+                    if self.infection['medium'][idx] == 1:
                         self.grid[j, i] = INFECTED
                         self.infect_list.append((j,i))
                 idx += 1
             end = time.time()
             hollow_loop.append(end - start)
-            for i, j in zip(neighbouring_idx[0], neighbouring_idx[1]):
-                if (i, j) == (x, y):
-                    continue
-                if (j, i) in self.infect_sprayed:
-                   if self.infection['medium'][idx] == 1:
-                        self.grid[j, i] = INFECTED
-                        self.infect_list.append((j,i))
-                idx += 1 
+        
         end = time.time()
         logging.debug(f"check_neighbour whole loop | Time taken: {end - start_loop}")
         logging.debug(f"check_neighbour Dense | Total {sum(dense_list)}, Average {np.round(np.average(dense_list), 6)}, Max: {np.round(max(dense_list), 6)}, Min: {np.round(min(dense_list), 6)} ")
@@ -679,14 +629,11 @@ class Threat_basic:
         end = time.time()
         logging.debug(f"Apply Pesticide | Time taken: {end - start}")
         start = time.time()
-        if self.timestep<62:
-            self.spread_probabilities()
-        else:
-            self.spread_probabilities_sprayed()
+        self.spread_probabilities()
         end = time.time()
         logging.debug(f"Spread Probabilities | Time taken: {end - start}")
         start = time.time()
-        self.infection_tracker(severity, timestep)
+        self.infection_tracker(severity)
         end = time.time()
         logging.debug(f"Infection Tracker | Time taken: {end - start}")
         start = time.time()

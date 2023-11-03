@@ -1,9 +1,9 @@
 from sqlite3 import Timestamp
 from tokenize import Double
-from modules import env_modules_pestval_new
+from modules import env_modules_pestval
 from utils import general_utils as gu
 from configobj import ConfigObj
-from modules import threat_modules_pestval_new as tm
+from modules import threat_modules_pestval as tm
 import pfrl
 import torch
 from torch import nn
@@ -66,7 +66,7 @@ logging.info(f"Github Branch: {branch}")
 logging.info(f"Github Commit: {commit}")
 gu.print_to_logs(config)
 
-env = env_modules_pestval_new.cartesian_grid()
+env = env_modules_pestval.cartesian_grid()
 gu.set_as_attr(env, config)
 env.init()
 env.rl_init()
@@ -475,7 +475,7 @@ with agent.eval_mode():
         while True:
             action = agent.act(obs.astype(np.float32))
             if env.timestep==62:
-                obs, reward, done = env.step(3)
+                obs, reward, done = env.step(1)
             else:
                 obs, reward, done = env.step(0)
             # obs, reward, done = env.step(action)

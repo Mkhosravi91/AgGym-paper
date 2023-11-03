@@ -303,15 +303,15 @@ for ep in range(1):
     env_list = []
     print("episod")
     while True:
-        print("timestamp")
+        print(total_step)
         agent_start = time.time()
         action = agent.act(obs.astype(np.float32))
-        print(action)
         # action = agent.act(obs.item())
         agent_end = time.time()
         agent_list.append(agent_end - agent_start)
         env_start = time.time()
-        obs, reward, done = env.step(action)
+        # obs, reward, done = env.step(action)
+        obs, reward, done = env.step(0)
         env_end = time.time()
         env_list.append(env_end - env_start)
         R += reward
@@ -392,12 +392,7 @@ import matplotlib.pyplot as plt
 fig, ax = plt.subplots(1,1, figsize=(9,6))
 sns.lineplot(x=np.arange(len(training_R)), y=training_R)
 ma_av=moving_average(training_R, 50)
-# ma=np.zeros((10, 10000-49))
-# for i in range(10):
-#     ma[i,:] = moving_average(training_rewards[i, :], 50)
-#     sns.lineplot(x=np.arange(len(ma[i])), y=ma[i,:])
-# MA=np.mean(ma, axis=0)
-# sns.lineplot(x=np.arange(len(MA)), y=MA, linewidth=7.0)
+
 sns.lineplot(x=np.arange(len(ma_av)), y=ma_av)
 plt.savefig(cwd / 'results' / now_str / 'training.png', dpi=300)
 plt.close()
@@ -475,18 +470,16 @@ with agent.eval_mode():
             R += reward
             agent.observe(obs.astype(np.float32), reward, done, done)
             # print(f'{env.dead_counts[-1]}')
-            # print(env.infect_counts[-1])  
-            # print(total_step) 
+            # print(env.infect_counts[-1])   
             print("dead_counts={}, infect_counts={}, total_step={}".format(env.dead_counts[-1], env.infect_counts[-1], total_step))
-            healthy_plants=env.state_space-(env.dead_counts[-1]+env.infect_counts[-1])
-            total_yield=healthy_plants-np.sum(np.array(env.Degraded_list))+env.infect_counts[-1]*0.6
+            # healthy_plants=env.state_space-(env.dead_counts[-1]+env.infect_counts[-1])
+            # total_yield=env.state_space-np.sum(np.array(env.Degraded_list))+env.infect_counts[-1]*0.6
+            total_yield=env.state_space+np.sum(np.array(env.Degraded_list))
             print("total_yield={}".format(total_yield))
-            #if env.dead_counts[-1] > 4:
-                #pdb.set_trace()
             print("Degraded_list={}".format(np.sum(np.array(env.Degraded_list))))
             print(f"Number of elements in the Degraded List are {len(env.Degraded_list)}")
             print("Degraded_list={}".format(np.array(env.Degraded_list)))
-            print(env.dead_counts[-1])
+            # print(env.dead_counts[-1])
             # print(env.severity)
             # print(f"temp {env.temp}")
             # print(f"prec{env.prec}")

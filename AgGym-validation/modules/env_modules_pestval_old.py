@@ -1,7 +1,7 @@
 from turtle import fd
 import numpy as np
 from utils import env_utils
-from modules import threat_modules_pestval_new as tm
+from modules import threat_modules_pestval as tm
 from utils import general_utils as gu
 import gym
 import logging
@@ -453,10 +453,10 @@ class cartesian_grid:
         self.grid, Degraded_list = self.threat.compute_infection(action, self.grid, self.gs_title, self.timestep, self.sim_mode, self.severity)
         end = time.time()
         logging.debug(f"Timestep: {self.timestep}, spread_computation: {end - start}")
-        # if self.sim_from_data == 'True' 
+        # if self.sim_from_data == 'True' and self.threat.key == True and self.key == False:
         #     # temp = self.temp_list[self.inde[x][self.timestep]
         #     # prec = self.precipitation_list[self.index][self.timestep]
-        #     temp = self.temp_list[0][self.tiand self.threat.key == True and self.key == False:mestep]
+        #     temp = self.temp_list[0][self.timestep]
         #     prec = self.precipitation_list[0][self.timestep]
         #     odds = 66.571 - 0.74 * prec - 2.594 * temp + 0.026 * prec * temp
         #     self.severity = np.exp(odds) / (1 + np.exp(odds))
@@ -466,15 +466,14 @@ class cartesian_grid:
         if self.sim_from_data == 'True':
             # temp = self.temp_list[self.inde[x][self.timestep]
             # prec = self.precipitation_list[self.index][self.timestep]
-            # temp = self.temp_list[0][self.timestep]
-            # prec = self.precipitation_list[0][self.timestep]
-            # odds = 66.571 - 0.74 * prec - 2.594 * temp + 0.026 * prec * temp
-            # self.severity = np.exp(odds) / (1 + np.exp(odds))
-            # self.key = True
-            # self.temp=temp
-            # self.prec=prec
-            # print(self.severity)
-            self.severity =0.28
+            temp = self.temp_list[0][self.timestep]
+            prec = self.precipitation_list[0][self.timestep]
+            odds = 66.571 - 0.74 * prec - 2.594 * temp + 0.026 * prec * temp
+            self.severity = np.exp(odds) / (1 + np.exp(odds))
+            self.key = True
+            self.temp=temp
+            self.prec=prec
+            # self.severity =0.05
         #pdb.set_trace()
         # Done condition
         done = done_delegator.main(self)

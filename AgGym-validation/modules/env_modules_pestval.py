@@ -296,6 +296,9 @@ class cartesian_grid:
             return ax
         else:
             return ax
+    def clean_and_convert(self, value):
+        cleaned_value = ''.join(char for char in value if char.isdigit() or char == '.')
+        return float(cleaned_value)   
         
     def rl_init(self):
         self.growth_stage_days = gu.str_to_type(self.growth_stage_days, 'int')
@@ -318,7 +321,8 @@ class cartesian_grid:
         self.num_of_plots_per_acre = int(43560 / (self.plotL * self.plotW))
         self.unit_potential_yield = int(self.simulated_potential_yield) / self.num_of_plots_per_acre
         self.price_per_bushel = int(self.price_per_bushel) 
-        self.unit_pesticide_per_acre = int(self.price_per_acre) / self.num_of_plots_per_acre
+        # self.unit_pesticide_per_acre = int(self.price_per_acre) / self.num_of_plots_per_acre
+        self.unit_pesticide_per_acre = [self.clean_and_convert(value)/ self.num_of_plots_per_acre for value in self.price_per_acre]
 
         self.timestep = 0
         self.episode = -1
@@ -389,7 +393,7 @@ class cartesian_grid:
         temp_max = gridmet_df[f'{start_season} 00:00:00': f'{end_season} 00:00:00']['tmmx'].to_numpy()
         self.temp_list.append(((temp_max+temp_min)/2)-273.15)
         self.list_length += 1
-        #pdb.set_trace()
+
         self.threat = eval(f"tm.{self.threat_name}({self.plotL*2}, {self.plotW*2}, {self.plotL*2}, {self.plotW*2}, self.grid, self.coords_x, self.coords_y, self.pesticide_actions)")
 
     def reset(self):
@@ -448,15 +452,14 @@ class cartesian_grid:
     def step(self, action):
         self.action = action
         start = time.time()
-        # if self.mode == 'eval' and self.timestep >30:
-        #     pdb.set_trace()
+
         self.grid, Degraded_list = self.threat.compute_infection(action, self.grid, self.gs_title, self.timestep, self.sim_mode, self.severity)
         end = time.time()
         logging.debug(f"Timestep: {self.timestep}, spread_computation: {end - start}")
-        # if self.sim_from_data == 'True' and self.threat.key == True and self.key == False:
+        # if self.sim_from_data == 'True' 
         #     # temp = self.temp_list[self.inde[x][self.timestep]
         #     # prec = self.precipitation_list[self.index][self.timestep]
-        #     temp = self.temp_list[0][self.timestep]
+        #     temp = self.temp_list[0][self.tiand self.threat.key == True and self.key == False:mestep]
         #     prec = self.precipitation_list[0][self.timestep]
         #     odds = 66.571 - 0.74 * prec - 2.594 * temp + 0.026 * prec * temp
         #     self.severity = np.exp(odds) / (1 + np.exp(odds))
@@ -464,17 +467,24 @@ class cartesian_grid:
         #     self.temp=temp
         #     self.prec=prec
         if self.sim_from_data == 'True':
-            # temp = self.temp_list[self.inde[x][self.timestep]
+
+            # temp = self.temp_list[self.index][self.timestep]
             # prec = self.precipitation_list[self.index][self.timestep]
-            temp = self.temp_list[0][self.timestep]
-            prec = self.precipitation_list[0][self.timestep]
+            if self.timestep < len(self.temp_list[0]):
+                
+                temp = self.temp_list[0][self.timestep]
+                prec = self.precipitation_list[0][self.timestep]
+            else:
+                temp = self.temp_list[0][-1]
+                prec = self.precipitation_list[0][-1]
             odds = 66.571 - 0.74 * prec - 2.594 * temp + 0.026 * prec * temp
             self.severity = np.exp(odds) / (1 + np.exp(odds))
             self.key = True
             self.temp=temp
             self.prec=prec
-            # self.severity =0.05
-        #pdb.set_trace()
+            # print(self.severity)
+            # self.severity =0.28
+
         # Done condition
         done = done_delegator.main(self)
 
@@ -486,8 +496,7 @@ class cartesian_grid:
         self.action_list.append(action)
         self.infect_counts.append(infect_count)
         self.dead_counts.append(dead_count)
-        # if dead_count>0:
-        #pdb.set_trace()
+
         # self.Degraded_list.append(Degraded_list)
         if self.timestep == 0:
             self.dead_counts2.append(dead_count)

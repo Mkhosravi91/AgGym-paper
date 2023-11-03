@@ -304,7 +304,7 @@ for ep in range(1):
     env_list = []
     print("episod")
     while True:
-        print("timestamp")
+
         agent_start = time.time()
         print(obs.astype(np.float32).shape)
         # if obs.astype(np.float32).shape==(3025,):
@@ -315,7 +315,8 @@ for ep in range(1):
         agent_end = time.time()
         agent_list.append(agent_end - agent_start)
         env_start = time.time()
-        obs, reward, done = env.step(action)
+        # obs, reward, done = env.step(action)
+        obs, reward, done = env.step(0)
         env_end = time.time()
         env_list.append(env_end - env_start)
         R += reward
@@ -475,7 +476,7 @@ with agent.eval_mode():
         while True:
             action = agent.act(obs.astype(np.float32))
             if env.timestep==62:
-                obs, reward, done = env.step(1)
+                obs, reward, done = env.step(3)
             else:
                 obs, reward, done = env.step(0)
             # obs, reward, done = env.step(action)
@@ -483,18 +484,15 @@ with agent.eval_mode():
             agent.observe(obs.astype(np.float32), reward, done, done)
             # print(f'{env.dead_counts[-1]}')
             # print(env.infect_counts[-1])  
-            # print(total_step) 
             print("dead_counts={}, infect_counts={}, total_step={}".format(env.dead_counts[-1], env.infect_counts[-1], total_step))
-            healthy_plants=env.state_space-(env.dead_counts[-1]+env.infect_counts[-1])
-            total_yield=healthy_plants-np.sum(np.array(env.Degraded_list))+env.infect_counts[-1]*0.6
+            # healthy_plants=env.state_space-(env.dead_counts[-1]+env.infect_counts[-1])
+            # total_yield=healthy_plants-np.sum(np.array(env.Degraded_list))+env.infect_counts[-1]*0.6
+            total_yield=env.state_space+np.sum(np.array(env.Degraded_list))
             print("total_yield={}".format(total_yield))
-            #if env.dead_counts[-1] > 4:
-                #pdb.set_trace()
             print("Degraded_list={}".format(np.sum(np.array(env.Degraded_list))))
             print(f"Number of elements in the Degraded List are {len(env.Degraded_list)}")
             print("Degraded_list={}".format(np.array(env.Degraded_list)))
             print(env.dead_counts[-1])
-            # print(env.severity)
             # print(f"temp {env.temp}")
             # print(f"prec{env.prec}")
             print(f'Timestep is {env.timestep}')

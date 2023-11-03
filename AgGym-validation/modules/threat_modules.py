@@ -10,6 +10,7 @@ from multiprocessing import Pool, shared_memory, cpu_count
 import time
 import pdb
 
+
 EMPTY = 0.0
 DEAD = 1.0
 INFECTED = 2.0
@@ -254,7 +255,7 @@ class Threat_basic:
         self.pesticide_actions = pesticide_action
         self.destruction_limit = [7, 8, 9]
         self.infect_list = []
-        
+        self.infect_list_before_pest=copy.deepcopy(self.infect_list)
         
         logging.info("---------- Threat initiated ----------")
         logging.info(f"Name: {self.__class__.__name__}")
@@ -263,6 +264,7 @@ class Threat_basic:
 
     def reset(self):
         self.infect_list = []
+        self.infect_list_before_pest=copy.deepcopy(self.infect_list)
         self.infect_day_mat = np.zeros(self.grid.shape)
         self.key = False
 
@@ -378,6 +380,7 @@ class Threat_basic:
 
     def apply_infection_reproductive_stage(self):
         if (self.gs_title.find('R') != -1 or self.gs_title.find('StartFlowering') != -1) and self.key == False:
+            pdb.set_trace()
             self.key = True
             random_index = np.random.randint(0, self.num_points)
             random_init_x = self.coords_x[random_index]
@@ -427,8 +430,7 @@ class Threat_basic:
                     self.infect_day_mat[y, x] = 0.
                     temp_list.append(idx)
             idx += 1
-        # if (len(self.infect_list)):
-            # pdb.set_trace()
+
         for i in temp_list[::-1]:
             self.infect_list.pop(i)
 
@@ -456,9 +458,7 @@ class Threat_basic:
             self.infect_day_mat[y, x] += 1
             limit = np.random.choice(self.destruction_limit)
             if self.infect_day_mat[y, x] >= limit:
-                # Dead_choice=np.random.choice([1, 0.6],replace=True, p=[0.4, 0.6])
-                # if Dead_choice==1:
-                # if np.random.rand()<=severity:
+
                 if self.grid[y, x] != DEAD:
                     self.grid[y, x] = DEAD
                     if 46<=self.timestep<=56:
@@ -467,16 +467,7 @@ class Threat_basic:
                         self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+6) / (1+np.exp(-self.infect_day_mat[y, x]+6)))*0.6) - 0.6)*severity)
                     else:
                         self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+6) / (1+np.exp(-self.infect_day_mat[y, x]+6)))*0.5) - 0.5)*severity)
-                # self.Degraded_list.append((((np.exp(self.infect_day_mat[y, x]+7) / (1+np.exp(self.infect_day_mat[y, x]+7)))*0.6)*severity))
-                # self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+7) / (1+np.exp(-self.infect_day_mat[y, x]+7)))*0.25) - 0.25)*severity)
-                # self.Degraded_list.append( (1+(((np.exp(-self.infect_day_mat[y, x]+7) / (1+np.exp(-self.infect_day_mat[y, x]+7)))*0.4) - 0.4) )*severity)
-                # Dead_choice=np.random.choice([1, 0.6],replace=True, p=[0.4, 0.6])
-                # if Dead_choice==1
-                # self.grid[y, x] = DEAD
-                # self.infect_day_mat[y, x] = 0.
-                # else: 
-                # self.grid[y, x]=Dead_choice
-                # self.infect_day_mat[y, x] = 0.
+
                 self.infect_day_mat[y, x] = 0.
                 # dense_list.append(idx)
                 #
@@ -530,12 +521,10 @@ class Threat_basic:
             
             start = time.time()
             _, neighbouring_idx = self.compute_dense(x, y, self.grid)
-            print(neighbouring_idx)
             end = time.time()
             dense_list.append(end - start)
             idx = 0
             start = time.time()
-            # pdb.set_trace()
             for (i, j) in zip(neighbouring_idx[0], neighbouring_idx[1]):
                 if (i, j) == (x, y):
                     continue
@@ -563,7 +552,7 @@ class Threat_basic:
                 idx += 1
             end = time.time()
             hollow_loop.append(end - start)
-        
+        self.infect_list_before_pest=copy.deepcopy(self.infect_list)
         end = time.time()
         logging.debug(f"check_neighbour whole loop | Time taken: {end - start_loop}")
         logging.debug(f"check_neighbour Dense | Total {sum(dense_list)}, Average {np.round(np.average(dense_list), 6)}, Max: {np.round(max(dense_list), 6)}, Min: {np.round(min(dense_list), 6)} ")
