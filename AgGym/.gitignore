@@ -1,0 +1,9 @@
+*.png
+*.gif
+*.pyc
+*.ipynb
+*.npy
+*.pt
+*.log
+*.DS_Store
+*figures
