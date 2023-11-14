@@ -255,6 +255,7 @@ class Threat_basic:
         self.pesticide_actions = pesticide_action
         self.destruction_limit = [13,14,15]
         self.infect_list = []
+        self.Degraded_list=[]
         self.infect_list_before_pest = []
         self.grid_list=[]
         self.alive_sprayed=[]
@@ -437,7 +438,7 @@ class Threat_basic:
 
 
 
-    def apply_pesticide(self, action: float):
+    def apply_pesticide(self, action: float, withpest_val):
         logging.debug(f"Infect list before pest: {self.infect_list}")
         self.infect_list_before_pest=copy.deepcopy(self.infect_list)
         pesticide_chance = self.pesticide_actions[action]
@@ -446,16 +447,39 @@ class Threat_basic:
         for i in range(len(self.grid)):
             for j in range(len(self.grid[0])):
                 self.grid_list.append((i, j))
-        
-        if action!=0 and len(self.infect_list)==0 and len(self.alive_sprayed) == 0:
-        #     action =0
-        #     pesticide_chance = self.pesticide_actions[action]       
-            self.alive_sprayed=self.grid_list
-        # if len(self.infect_list)!=0:
+        #Validation once having pesticide application across the entire field in a single day
+        # if self.withpest_val == True:
+        #     for i in self.grid_list:
+        #         if not any(np.array_equal(i, infected) for infected in self.infect_list) and not any(np.array_equal(i, degraded) for degraded in self.Degraded_list):
+        #             self.alive_sprayed.append(i)
+        #     if action!=0:
+        #         for i in self.infect_list_before_pest:
+        #             if i not in self.infect_sprayed:
+        #                 self.infect_sprayed.append(i)
+        # else:
+        #     if action!=0 and len(self.infect_list)==0 and len(self.alive_sprayed) == 0:
+        #     #     action =0
+        #     #     pesticide_chance = self.pesticide_actions[action]       
+        #         self.alive_sprayed=self.grid_list
+        # # if len(self.infect_list)!=0:
+        #         for i in self.infect_list_before_pest:
+        #             if i not in self.infect_sprayed:
+        #                 self.infect_sprayed.append(i)
+        if withpest_val=='True' and action != 0:
+            # Add all non-infected and non-degraded plots that have been sprayed to alive_sprayed list
+            self.alive_sprayed = [i for i in self.grid_list if not any(np.array_equal(i, infected) for infected in self.infect_list) and not any(np.array_equal(i, degraded) for degraded in self.Degraded_list)]
+    
+            # If action is non-zero, update infect_sprayed list with new infections that have not been sprayed
+            # if action != 0:
+            self.infect_sprayed.extend([i for i in self.infect_list_before_pest if i not in self.infect_sprayed])
+        else:
+            # If action is non-zero and there are no infections and no alive_sprayed, 
+             # set alive_sprayed to all grid points and update infect_sprayed list
+            if action != 0 and not self.infect_list and not self.alive_sprayed:
+                self.alive_sprayed = self.grid_list.copy()
+                self.infect_sprayed.extend([i for i in self.infect_list_before_pest if i not in self.infect_sprayed])
 
-        for i in self.infect_list_before_pest:
-            if i not in self.infect_sprayed:
-                    self.infect_sprayed.append(i)
+
         temp_list = []
         pest_chance_list = np.random.choice([0,1], size=len(self.infect_list), replace=True, p=[1-pesticide_chance, pesticide_chance])
         # for p in pest_chance_list:
@@ -513,12 +537,13 @@ class Threat_basic:
             if self.infect_day_mat[y, x] >= limit:
                 if self.grid[y, x] != DEAD:
                     self.grid[y, x] = DEAD
+
                     if 46<=self.timestep<=56:
-                        self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+12) / (1+np.exp(-self.infect_day_mat[y, x]+12)))*0.7) - 0.7)*severity*200)
+                        self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+12) / (1+np.exp(-self.infect_day_mat[y, x]+12)))*0.7) - 0.7)*severity)
                     elif 57<=self.timestep<=74:
-                        self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+12) / (1+np.exp(-self.infect_day_mat[y, x]+12)))*0.6) - 0.6)*severity*200)
+                        self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+12) / (1+np.exp(-self.infect_day_mat[y, x]+12)))*0.6) - 0.6)*severity)
                     else:
-                        self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+12) / (1+np.exp(-self.infect_day_mat[y, x]+12)))*0.5) - 0.5)*severity*200)
+                        self.Degraded_list.append( (((np.exp(-self.infect_day_mat[y, x]+12) / (1+np.exp(-self.infect_day_mat[y, x]+12)))*0.5) - 0.5)*severity)
 
                 self.infect_day_mat[y, x] = 0.
                 # dense_list.append(idx)
@@ -584,6 +609,8 @@ class Threat_basic:
                     if (j, i) not in self.infect_sprayed and self.infection['high'][idx] == 1:
                         self.grid[j, i] = INFECTED
                         self.infect_list.append((j,i))
+                    # the probability of initially getting infected,
+                    #  then being treated (sprayed) and recovering (becoming alive), followed by a subsequent reinfection
                     elif (j, i) in self.infect_sprayed and self.infection['high'][idx] == 2:
                         self.grid[j, i] = INFECTED
                         self.infect_list.append((j,i))
@@ -592,6 +619,10 @@ class Threat_basic:
                     if (j, i) not in self.infect_sprayed and self.infection['high'][idx] == 1:
                             self.grid[j, i] = INFECTED
                             self.infect_list.append((j,i))
+                    # The probability of an already immuned plot (alive) getting sprayed, 
+                    # followed by infection, subsequent treatment (spraying), recovery (becoming alive again), 
+                    # and then experiencing reinfection. This wouldnt occure in the actual scenario, where spraying occurs only once,
+                    # so the probability should be set to zero once validating the real situation 
                     elif (j, i) in self.infect_sprayed and self.infection['high'][idx] == 2:
                             self.grid[j, i] = INFECTED
                             self.infect_list.append((j,i))
@@ -643,9 +674,10 @@ class Threat_basic:
         
         
             
-    def compute_infection(self, action, grid, gs_title, sim_mode, severity, timestep):
+    def compute_infection(self, action, grid, gs_title, timestep, sim_mode, withpest_val, severity):
         self.gs_title = gs_title
         self.grid = grid
+        
         if sim_mode == 'growthseason':
             start = time.time()
             self.apply_infection_reproductive_stage()
@@ -655,11 +687,11 @@ class Threat_basic:
             self.apply_infection_reproductive_stage_survival()
         else:
             assert 1 == 2, "Compute infection sim mode error exception"
-        print(f"Infected #={len(self.infect_list)}")
+        print(f"Infected before pesticide #={len(self.infect_list)}")
         start = time.time()
-        self.apply_pesticide(action)
+        self.apply_pesticide(action, withpest_val)
         end = time.time()
-        print(f"Infected #={len(self.infect_list)}")
+        print(f"Infected after pesticide #={len(self.infect_list)}")
         logging.debug(f"Apply Pesticide | Time taken: {end - start}")
         start = time.time()
         if len(self.alive_sprayed)==0:

@@ -474,7 +474,7 @@ class cartesian_grid:
 
         self.action = action
         start = time.time()
-        self.grid, Degraded_list, infectdeg_list = self.threat.compute_infection(action, self.grid, self.gs_title, self.sim_mode, self.severity, self.timestep)
+        self.grid, Degraded_list, infectdeg_list = self.threat.compute_infection(action, self.grid, self.gs_title, self.timestep, self.sim_mode, self.withpest_val, self.severity)
         end = time.time()
         logging.debug(f"Timestep: {self.timestep}, spread_computation: {end - start}")
         # if self.sim_from_data == 'True' and self.threat.key == True and self.key == False:
