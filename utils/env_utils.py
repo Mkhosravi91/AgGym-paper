@@ -119,7 +119,7 @@ def plot_field(self, title):
     if len(height_list) == 0:
         height_list = [0]
         color_list = pest_palette
-    sns.barplot(x=np.arange(len(height_list)),y=height_list, palette=color_list, ax=ax_dict["E"])
+    sns.barplot(x=np.arange(len(height_list)),y=height_list, hue=np.arange(len(height_list)), palette=color_list, ax=ax_dict["E"], legend=False)
     ax_dict["E"].spines[:].set_visible(False)
     ax_dict["E"].tick_params(axis="both", which="both", bottom=False, left=False, labelbottom=False)
     ax_dict["E"].set_ylabel("Application")

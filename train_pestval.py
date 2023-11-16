@@ -469,7 +469,7 @@ if env.model == 'ppo':
     sns.lineplot(x=np.arange(len(average_value_loss)), y=average_value_loss, ax=ax_dict["C"])
     ma = moving_average(average_value_loss, 50)
     # sns.lineplot(x=np.arange(len(ma)), y=ma, ax=ax_dict["C"])
-    sns.lineplot(np.arange(len(ma)), ma, ax=ax_dict["C"])
+    sns.lineplot(x=np.arange(len(ma)), y=ma, ax=ax_dict["C"])
     ax_dict["C"].set_title("Average Value Loss")
 
     sns.lineplot(x=np.arange(len(average_policy_loss)), y=average_policy_loss, ax=ax_dict["D"])
