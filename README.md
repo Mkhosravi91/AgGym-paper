@@ -13,7 +13,7 @@ By setting sim_from_data = True, you allow AgGym to use weather data to predict 
 If set to False, you can manually input the severity as a hardcoded value of your choice, and AgGym will use predefined settings for various stages and their durations throughout the growing season (which is currently defined in the config file).  
 The anticipated results include visual representations of agent performance, saved agent weights, a detailed analysis of performance and costs, and the overall revenue.
 
-![UML Structure of AgGym]([https://github.com/Mkhosravi91/AgGym-paper/blob/public/U4-01.png]
+![UML Structure of AgGym](https://github.com/Mkhosravi91/AgGym-paper/blob/public/U4-01.png)
 
 
 __Arxiv Paper:__  
